@@ -2,6 +2,7 @@ const ENTER = 13;
 
 //BUDGET CONTROLLER
 var budgetController = (function() {
+
 	var Expense = function(id, description, value) {
 		this.id = id;
 		this.description = description;
@@ -12,7 +13,6 @@ var budgetController = (function() {
 		this.description = description;
 		this.value = value;
 	};
-
 	var data = {
 		allItems: {
 			exp: [],
@@ -71,7 +71,7 @@ var UIController = (function() {
 		},
 		addListItem: function(object, type) {
 			//Create HTML string with placeholder text
-			var html,element;
+			var html, element;
 
 			if (type === "inc") {
 				element = DOMstrings.incomeContainer;
@@ -80,7 +80,7 @@ var UIController = (function() {
 			} else if (type === "exp") {
 				element = DOMstrings.expensesContainer;
 				html =
-					'<div class="item clearfix" id="expense-%id%"><div class="item__description">Apartment rent</div><div class="right clearfix"><div class="item__value">%description%</div><div class="item__percentage">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+					'<div class="item clearfix" id="expense%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">10%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></button></div></div></div>';
 			}
 
 			//Replace the placeholder text with some actual data
@@ -90,6 +90,15 @@ var UIController = (function() {
 
 			//insert the HTML into the DOM
 			document.querySelector(element).insertAdjacentHTML("beforeend",newHtml);
+		},
+		clearFilds: function(){
+			var fields;
+			fields = document.querySelectorAll(DOMstrings.inputDescription + ", " + DOMstrings.inputValue );
+			fieldsArr = Array.prototype.slice.call(fields); 
+			fieldsArr.forEach(function(current,index,array){
+				current.value = "";
+			});
+			fieldsArr[0].focus();
 		}
 	};
 })();
@@ -106,8 +115,10 @@ var controller = (function(budgetCtrl, UICtrl) {
 		newItem = budgetCtrl.addItem(input.type,input.description,input.value);
 		//3. Add the item to the UI
 		UICtrl.addListItem(newItem,input.type); 
-		//4. Calculate the budget
-		//5. Display the budget on the UI
+		//4.Clean Fields
+		UICtrl.clearFilds();
+		//5. Calculate the budget
+		//6. Display the budget on the UI
 	};
 
 	var setupEventListeners = function() {
