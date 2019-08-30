@@ -1,9 +1,7 @@
-
 const ENTER = 13;
 
 //BUDGET CONTROLLER
 var budgetController = (function() {
-
 	var Expense = function(id, description, value) {
 		this.id = id;
 		this.description = description;
@@ -28,13 +26,14 @@ var budgetController = (function() {
 
 	return {
 		addItem: function(typeItem, descriptionItem, valueItem) {
-			var newItem,ID,lastItemIndex,selectedItem;
-			lastItemIndex = data.allItems[typeItem].length -1;
+			var newItem, ID, lastItemIndex, selectedItem;
+			lastItemIndex = data.allItems[typeItem].length - 1;
 			selectedItem = data.allItems[typeItem];
 
 			//Create new Id
 			ID = 0;
-			if(selectedItem.length > 0 ) ID = selectedItem[lastItemIndex].id +1;
+			if (selectedItem.length > 0)
+				ID = selectedItem[lastItemIndex].id + 1;
 
 			//Create new item based on "inc" or "exp" type
 			if (typeItem === "exp") {
@@ -44,19 +43,19 @@ var budgetController = (function() {
 			}
 			selectedItem.push(newItem);
 			return newItem;
-		},
+		}
 	};
-
 })();
 
 //UI CONTROLLER
 var UIController = (function() {
-
 	var DOMstrings = {
 		inputType: ".add__type",
 		inputDescription: ".add__description",
 		inputValue: ".add__value",
-		inputBtn: ".add__btn"
+		inputBtn: ".add__btn",
+		incomeContainer: ".income__list",
+		expensesContainer: ".expenses__list"
 	};
 
 	return {
@@ -69,26 +68,48 @@ var UIController = (function() {
 		},
 		getDOMstrings: function() {
 			return DOMstrings;
+		},
+		addListItem: function(object, type) {
+			//Create HTML string with placeholder text
+			var html,element;
+
+			if (type === "inc") {
+				element = DOMstrings.incomeContainer;
+				html =
+					'<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+			} else if (type === "exp") {
+				element = DOMstrings.expensesContainer;
+				html =
+					'<div class="item clearfix" id="expense-%id%"><div class="item__description">Apartment rent</div><div class="right clearfix"><div class="item__value">%description%</div><div class="item__percentage">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+			}
+
+			//Replace the placeholder text with some actual data
+			newHtml = html.replace("%id%",object.id);
+			newHtml = newHtml.replace("%description%",object.description);
+			newHtml = newHtml.replace("%value%",object.value);
+
+			//insert the HTML into the DOM
+			document.querySelector(element).insertAdjacentHTML("beforeend",newHtml);
 		}
 	};
 })();
 
 //GLOBAL APP CONTROLLER
 var controller = (function(budgetCtrl, UICtrl) {
-
 	var DOM = UICtrl.getDOMstrings();
 
 	var ctrlAddItem = function() {
-		var input,newItem;
+		var input, newItem;
 		//1. Get the filed input data
 		input = UICtrl.getInput();
 		//2. Add the item to the budget controller
 		newItem = budgetCtrl.addItem(input.type,input.description,input.value);
 		//3. Add the item to the UI
+		UICtrl.addListItem(newItem,input.type); 
 		//4. Calculate the budget
 		//5. Display the budget on the UI
 	};
-	
+
 	var setupEventListeners = function() {
 		document.querySelector(DOM.inputBtn).addEventListener("click", ctrlAddItem);
 		document.addEventListener("keypress", function(event) {
@@ -99,14 +120,11 @@ var controller = (function(budgetCtrl, UICtrl) {
 	};
 
 	return {
-		init: function(){
+		init: function() {
 			console.log("App has started");
 			setupEventListeners();
 		}
-	}	
-
-
-
+	};
 })(budgetController, UIController);
 
 controller.init();
