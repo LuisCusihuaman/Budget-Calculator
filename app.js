@@ -124,6 +124,12 @@ var UIController = (function() {
 		dateLabel: ".budget__title--month"
 	};
 
+	var nodeListForEach = function(list, callback) {
+		for (let index = 0; index < list.length; index++) {
+			callback(list[index], index);
+		}
+	};
+
 	return {
 		getInput: function() {
 			return {
@@ -178,15 +184,11 @@ var UIController = (function() {
 		},
 		displayPercentages: function(percentages) {
 			var fields = document.querySelectorAll(DOMString.expensesPercLabel);
-			var nodeListForEach = function(list, callback) {
-				for (let index = 0; index < list.length; index++) {
-					callback(list[index], index);
-				}
-				nodeListForEach(fields, function(current, index) {
-					current.textContent = percentages[index] + (percentages[index]>0 ? "%":"---");
-				});
-			};
-		},
+
+			nodeListForEach(fields, function(current, index) {
+				current.textContent = percentages[index] + (percentages[index]>0 ? "%":"---");
+			})
+			},	
 		clearFilds: function() {
 			var fields;
 			fields = document.querySelectorAll(
@@ -207,8 +209,14 @@ var UIController = (function() {
             
             year = now.getFullYear();
             document.querySelector(DOMstrings.dateLabel).textContent = months[month] + ' ' + year;
+		},
+		changedType: function(){
+			var fields = document.querySelectorAll(DOMstrings.inputType + "," + DOMstrings.inputDescription + "," + DOMstrings.inputValue);
+			nodeListForEach(fields,function(cur){
+				cur.classList.add("red-focus");
+			})
 		}
-	};
+	}
 })();
 
 //GLOBAL APP CONTROLLER
@@ -263,6 +271,7 @@ var controller = (function(budgetCtrl, UICtrl) {
 			}
 		});
 		document.querySelector(DOM.container).addEventListener("click",ctrlDeleteItem);
+		document.querySelector(DOM.inputType).addEventListener("change",UICtrl.changedType);
 	};
 	var updateBudget = function() {
 		//1. Calculate the budget
