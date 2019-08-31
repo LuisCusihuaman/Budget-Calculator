@@ -84,7 +84,11 @@ var UIController = (function() {
 		inputValue: ".add__value",
 		inputBtn: ".add__btn",
 		incomeContainer: ".income__list",
-		expensesContainer: ".expenses__list"
+		expensesContainer: ".expenses__list",
+		budgetLabel: ".budget__value",
+		incomeLabel: ".budget__income--value",
+		expensesLabel: ".budget__expenses--value",
+		percentageLabel: ".budget__expenses--percentage"
 	};
 
 	return {
@@ -120,6 +124,20 @@ var UIController = (function() {
 			//insert the HTML into the DOM
 			document.querySelector(element).insertAdjacentHTML("beforeend",newHtml);
 		},
+
+		displayBudget: function(object){
+			document.querySelector(DOMstrings.budgetLabel).textContent = object.budget;
+			document.querySelector(DOMstrings.incomeLabel).textContent = object.totalInc;
+			document.querySelector(DOMstrings.expensesLabel).textContent = object.totalExp;
+			if(object.percentage > 0){
+				document.querySelector(DOMstrings.percentageLabel).textContent = object.percentage + "%";
+			}else {
+
+				document.querySelector(DOMstrings.percentageLabel).textContent = "---";
+			}
+
+		},
+
 		clearFilds: function(){
 			var fields;
 			fields = document.querySelectorAll(DOMstrings.inputDescription + ", " + DOMstrings.inputValue );
@@ -141,14 +159,7 @@ var controller = (function(budgetCtrl, UICtrl) {
 			input.description !== "" && !isNaN(input.value) && input.value > 0
 		);
 	};
-	var updateBudget = function() {
-		//1. Calculate the budget
-		budgetCtrl.calculateBudget();
-		//2. Return the budget
-		var budget = budgetCtrl.getBudget();
-		//3. Display the budget on the UI
-		console.log(budget);
-	};
+
 	var ctrlAddItem = function() {
 		var input, newItem;
 		//1. Get the filed input data
@@ -174,10 +185,24 @@ var controller = (function(budgetCtrl, UICtrl) {
 			}
 		});
 	};
+	var updateBudget = function() {
+		//1. Calculate the budget
+		budgetCtrl.calculateBudget();
+		//2. Return the budget
+		var budget = budgetCtrl.getBudget();
+		//3. Display the budget on the UI
+		UICtrl.displayBudget(budget);
+	};
 
 	return {
 		init: function() {
 			console.log("App has started");
+			UICtrl.displayBudget({
+				budget: 0,
+				totalInc: 0,
+				totalExp: 0,
+				percentage: -1
+			});
 			setupEventListeners();
 		}
 	};
