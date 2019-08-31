@@ -65,25 +65,22 @@ var budgetController = (function() {
 			//calculate the percentage of income that we spent
 			data.percentage = data.totals.inc > 0 ? Math.round((data.totals.exp / data.totals.inc) * 100) : DOES_NOT_EXITS;
 		},
-		deleteItem = function(type, id) {
-
-			var ids,index;
-
-			ids = data.allItems[type].map(function(current){
-				return current.id;
-			});
-			index = ids.indexOf(id);
-			if(index !== -1){
-				data.allItems[type].splice(index,1);
-			}
-
-		},
 		getBudget: function(){
 			return {
 				budget: data.budget,
 				totalInc: data.totals.inc,
 				totalExp: data.totals.exp,
 				percentage: data.percentage
+			}
+		},
+
+		deleteItem: function(type,id) {
+			var ids,index;
+			var x = data.allItems
+			ids = data.allItems[type].map((current) => current.id);
+			index = ids.indexOf(id);
+			if(index !== -1){
+				data.allItems[type].splice(index,1);
 			}
 		}
 	};
@@ -139,6 +136,10 @@ var UIController = (function() {
 			//insert the HTML into the DOM
 			document.querySelector(element).insertAdjacentHTML("beforeend",newHtml);
 		},
+		deleteListItem: function(selectorID){
+			var el = document.getElementById(selectorID);
+			el.parentNode.removeChild(el);
+		},
 		displayBudget: function(object){
 			document.querySelector(DOMstrings.budgetLabel).textContent = object.budget;
 			document.querySelector(DOMstrings.incomeLabel).textContent = object.totalInc;
@@ -172,9 +173,14 @@ var controller = (function(budgetCtrl, UICtrl) {
 		itemID = event.target.parentNode.parentNode.parentNode.parentNode.id;
 		if(itemID != null){
 			splitID = itemID.split("-");
-			type = splitID[0];
+			type = splitID[0].slice(0,3);
 			ID = parseInt(splitID[1]);
+			//delete item from the structure
 			budgetCtrl.deleteItem(type,ID);
+			//delete item from ui
+			UICtrl.deleteListItem(itemID);
+			//Update and show the new budget
+			updateBudget();
 		}
 
 	};
