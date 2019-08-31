@@ -1,6 +1,7 @@
 const ENTER = 13;
+const DOES_NOT_EXITS = -1;
 
-//BUDGET CONTROLLER
+//BUDGET CONTROLLER // MODEL/LOGIC CONTROLLER
 var budgetController = (function() {
 
 	var Expense = function(id, description, value) {
@@ -16,13 +17,23 @@ var budgetController = (function() {
 	var data = {
 		allItems: {
 			exp: [],
-			inc: [],
-			totals: {
-				exp: 0,
-				inc: 0
-			}
-		}
+			inc: []
+		},
+		totals: {
+			exp: 0,
+			inc: 0
+		},
+		budget: 0,
+		percentage: DOES_NOT_EXITS
 	};
+
+	var calculateTotal = function(type){
+		var sum = 0;
+		data.allItems[type].forEach(function(current){
+			sum += current.value;
+		})
+		data.totals[type] = sum;
+	}
 
 	return {
 		addItem: function(typeItem, descriptionItem, valueItem) {
@@ -43,12 +54,30 @@ var budgetController = (function() {
 			}
 			selectedItem.push(newItem);
 			return newItem;
+		},
+		calculateBudget: function(){
+			//calculate total income and expenses
+			calculateTotal("exp");
+			calculateTotal("inc");
+			//calculate the budget: income-expenses
+			data.budget = data.totals.inc - data.totals.exp;
+			//calculate the percentage of income that we spent
+			data.percentage = data.totals.inc > 0 ? Math.round((data.totals.exp / data.totals.inc) * 100) : DOES_NOT_EXITS;
+		},
+		getBudget: function(){
+			return {
+				budget: data.budget,
+				totalInc: data.totals.inc,
+				totalExp: data.totals.exp,
+				percentage: data.percentage
+			}
 		}
 	};
 })();
 
 //UI CONTROLLER
 var UIController = (function() {
+	
 	var DOMstrings = {
 		inputType: ".add__type",
 		inputDescription: ".add__description",
@@ -63,7 +92,7 @@ var UIController = (function() {
 			return {
 				type: document.querySelector(DOMstrings.inputType).value,
 				description: document.querySelector(DOMstrings.inputDescription).value,
-				value: document.querySelector(DOMstrings.inputValue).value
+				value: parseFloat(document.querySelector(DOMstrings.inputValue).value)
 			};
 		},
 		getDOMstrings: function() {
@@ -105,22 +134,38 @@ var UIController = (function() {
 
 //GLOBAL APP CONTROLLER
 var controller = (function(budgetCtrl, UICtrl) {
-	var DOM = UICtrl.getDOMstrings();
 
+	var DOM = UICtrl.getDOMstrings();
+	var inputIsValid = function(input) {
+		return (
+			input.description !== "" && !isNaN(input.value) && input.value > 0
+		);
+	};
+	var updateBudget = function() {
+		//1. Calculate the budget
+		budgetCtrl.calculateBudget();
+		//2. Return the budget
+		var budget = budgetCtrl.getBudget();
+		//3. Display the budget on the UI
+		console.log(budget);
+	};
 	var ctrlAddItem = function() {
 		var input, newItem;
 		//1. Get the filed input data
 		input = UICtrl.getInput();
-		//2. Add the item to the budget controller
-		newItem = budgetCtrl.addItem(input.type,input.description,input.value);
-		//3. Add the item to the UI
-		UICtrl.addListItem(newItem,input.type); 
-		//4.Clean Fields
-		UICtrl.clearFilds();
-		//5. Calculate the budget
-		//6. Display the budget on the UI
-	};
 
+		if (inputIsValid(input)) {
+			//2. Add the item to the budget controller
+			newItem = budgetCtrl.addItem(input.type,input.description,input.value);
+			//3. Add the item to the UI
+			UICtrl.addListItem(newItem, input.type);
+			//4.Clean Fields
+			UICtrl.clearFilds();
+			//5. Calculate and update the budget
+			updateBudget();
+			//6. Display the budget on the UI
+		}
+	};
 	var setupEventListeners = function() {
 		document.querySelector(DOM.inputBtn).addEventListener("click", ctrlAddItem);
 		document.addEventListener("keypress", function(event) {
